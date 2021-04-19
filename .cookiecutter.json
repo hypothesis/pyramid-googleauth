@@ -1,0 +1,14 @@
+{
+    "project_name": "h-pyramid-google-oauth",
+    "description": "An example library",
+    "project_slug": "h-pyramid-google-oauth",
+    "pkg_name": "h_pyramid_google_oauth",
+    "options": {
+        "disable_replay": [
+            "README.md",
+            "setup.cfg",
+            "src/h_pyramid_google_oauth/__init__.py"
+        ]
+    },
+    "_template": "gh:hypothesis/h-cookiecutter-pypackage"
+}
