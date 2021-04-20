@@ -8,6 +8,11 @@ from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
 from tests.functional.services import signature_service  # pylint:disable=unused-import
+from pyramid.session import SignedCookieSessionFactory
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
+from h_pyramid_google_oauth.security import GoogleSecurityPolicy, DEFAULT_PERMISSION
 
 
 from h_pyramid_google_oauth.routes import add_routes
@@ -43,7 +48,27 @@ def logged_in(app, route_url, signature_service, mock_google_auth_service):
 def pyramid_app(pyramid_settings):
 
     config = pyramid.config.Configurator(settings=pyramid_settings)
+    config.include("pyramid_services")
+    config.include("h_pyramid_google_oauth")
     add_routes(config)
-    config.scan()
+
+    session_factory = SignedCookieSessionFactory(
+        pyramid_settings["h_pyramid_google_oauth.secret"],
+        serializer=pyramid.session.JSONSerializer(),
+    )
+    config.set_session_factory(session_factory)
+    config.set_security_policy(GoogleSecurityPolicy())
+
+    def protected_view(context, request):
+        return Response(body="ok", status=200)
+
+    def logged_out(request):
+        return HTTPFound(location=request.route_url("h_pyramid_google_oauth_login"))
+
+    config.add_view(
+        protected_view, route_name="protected_view", permission=DEFAULT_PERMISSION
+    )
+    config.add_route("protected_view", "/inside")
+    config.add_forbidden_view(logged_out)
 
     return config.make_wsgi_app()
