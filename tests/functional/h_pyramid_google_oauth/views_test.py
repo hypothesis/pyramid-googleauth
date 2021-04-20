@@ -17,7 +17,7 @@ class TestLogin:
                 dict(
                     response_type="code",
                     client_id="google_client_id",
-                    redirect_uri=route_url("login_callback"),
+                    redirect_uri=route_url("h_pyramid_google_oauth_login_callback"),
                     scope=Any.string(),
                     state=Any.string(),
                     access_type="offline",
@@ -30,11 +30,14 @@ class TestLogin:
 
 class TestLoginCallback:
     @pytest.mark.usefixtures("mock_google_auth_service")
-    def test_it_redirects_to_admin_pages(self, app, route_url, nonce):
+    def test_it_redirects_to_success_redirect(
+        self, app, route_url, nonce, pyramid_settings
+    ):
         response = app.get("/ui/api/login_callback", params={"state": nonce})
 
-        assert response == temporary_redirect_to(route_url("admin_pages"))
-        # The redirect response from the app should have included a Set-Cookie header.
+        assert response == temporary_redirect_to(
+            pyramid_settings["h_pyramid_google_oauth.login_success_redirect_url"]
+        )
         # Webtest handles cookies so if we follow the redirect to the admin
         # page we should be authenticated and get a 200 OK not a redirect to
         # the login page.
@@ -78,7 +81,9 @@ class TestLoginCallback:
         response = app.get("/ui/api/login_callback", params)
 
         assert logged_text in caplog.text
-        assert response == temporary_redirect_to(route_url("admin_login_failure"))
+        assert response == temporary_redirect_to(
+            route_url("h_pyramid_google_oauth_login_failure")
+        )
 
     @pytest.fixture
     def nonce(self, signature_service):
@@ -91,7 +96,9 @@ class TestLogout:
     ):
         response = app.get("/ui/api/logout")
 
-        assert response == temporary_redirect_to(route_url("login"))
+        assert response == temporary_redirect_to(
+            route_url("h_pyramid_google_oauth_login")
+        )
 
     @pytest.mark.usefixtures("logged_in")
     def test_if_youre_logged_in_it_logs_you_out_and_redirects_you_to_the_login_page(
@@ -100,8 +107,10 @@ class TestLogout:
         response = app.get("/ui/api/logout")
 
         assert response == temporary_redirect_to(
-            route_url("login", _query={"hint": "user@hypothes.is"})
+            route_url(
+                "h_pyramid_google_oauth_login", _query={"hint": "user@hypothes.is"}
+            )
         )
         # Verify that it has logged us out by trying to get the admin page and
         # verifying that it redirects rather than 200ing.
-        app.get(route_url("admin_pages"), status=302)
+        app.get("/inside", status=302)
