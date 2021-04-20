@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from h_pyramid_google_oauth.services import GoogleAuthService, SignatureService
+from pyramid_googleauth.services import GoogleAuthService, SignatureService
 
 
 @pytest.fixture

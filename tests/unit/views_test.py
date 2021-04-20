@@ -3,8 +3,8 @@ from unittest.mock import sentinel
 import pytest
 from h_matchers import Any
 
-from h_pyramid_google_oauth.exceptions import UserNotAuthenticated
-from h_pyramid_google_oauth.views import login, login_callback, logout, login_failure
+from pyramid_googleauth.exceptions import UserNotAuthenticated
+from pyramid_googleauth.views import login, login_callback, login_failure, logout
 
 
 @pytest.mark.usefixtures("google_auth_service")

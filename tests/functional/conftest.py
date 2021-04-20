@@ -1,21 +1,16 @@
-import contextlib
-
-import pytest
 import pyramid
+import pytest
+from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
+from pyramid.session import SignedCookieSessionFactory
 from webtest import TestApp
 
+from pyramid_googleauth.routes import add_routes
+from pyramid_googleauth.security import DEFAULT_PERMISSION, GoogleSecurityPolicy
 from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
 from tests.functional.services import signature_service  # pylint:disable=unused-import
-from pyramid.session import SignedCookieSessionFactory
-from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
-from pyramid.response import Response
-from h_pyramid_google_oauth.security import GoogleSecurityPolicy, DEFAULT_PERMISSION
-
-
-from h_pyramid_google_oauth.routes import add_routes
 
 
 @pytest.fixture
@@ -30,7 +25,9 @@ def app(pyramid_app):
 
 
 @pytest.fixture
-def logged_in(app, route_url, signature_service, mock_google_auth_service):
+def logged_in(
+    app, route_url, signature_service, mock_google_auth_service
+):  # pylint: disable=unused-argument
     """Make `app` be logged in to the admin pages with a session cookie."""
     # Google redirects the browser to our login callback URL with a state
     # param, and the login callback URL's response includes a session cookie in
@@ -39,7 +36,7 @@ def logged_in(app, route_url, signature_service, mock_google_auth_service):
     # `app.cookiejar`. Webtest will automatically send the cookie in subsequent
     # requests made with `app`.
     app.get(
-        route_url("h_pyramid_google_oauth_login_callback"),
+        route_url("pyramid_googleauth_login_callback"),
         params={"state": signature_service.get_nonce()},
     )
 
@@ -49,21 +46,21 @@ def pyramid_app(pyramid_settings):
 
     config = pyramid.config.Configurator(settings=pyramid_settings)
     config.include("pyramid_services")
-    config.include("h_pyramid_google_oauth")
+    config.include("pyramid_googleauth")
     add_routes(config)
 
     session_factory = SignedCookieSessionFactory(
-        pyramid_settings["h_pyramid_google_oauth.secret"],
+        pyramid_settings["pyramid_googleauth.secret"],
         serializer=pyramid.session.JSONSerializer(),
     )
     config.set_session_factory(session_factory)
     config.set_security_policy(GoogleSecurityPolicy())
 
-    def protected_view(context, request):
+    def protected_view(_context, _request):
         return Response(body="ok", status=200)
 
     def logged_out(request):
-        return HTTPFound(location=request.route_url("h_pyramid_google_oauth_login"))
+        return HTTPFound(location=request.route_url("pyramid_googleauth_login"))
 
     config.add_view(
         protected_view, route_name="protected_view", permission=DEFAULT_PERMISSION

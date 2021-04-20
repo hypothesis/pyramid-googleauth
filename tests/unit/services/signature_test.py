@@ -1,7 +1,7 @@
 import pytest
 from h_matchers import Any
 
-from h_pyramid_google_oauth.services.signature import SignatureService
+from pyramid_googleauth.services.signature import SignatureService
 
 
 class TestSignatureService:

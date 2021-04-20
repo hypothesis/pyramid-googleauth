@@ -26,7 +26,7 @@ class GoogleSecurityPolicy:
         userid = self.authenticated_userid(request)
 
         get_identity = request.registry.settings.get(
-            "h_pyramid_google_oauth.get_identity_callable", _get_identity
+            "pyramid_googleauth.get_identity_callable", _get_identity
         )
 
         return get_identity(userid)

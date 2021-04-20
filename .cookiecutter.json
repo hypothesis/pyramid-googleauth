@@ -1,7 +1,7 @@
 {
-    "project_name": "h-pyramid-google-oauth",
+    "project_name": "pyramid-googleauth",
     "description": "An example library",
-    "project_slug": "h-pyramid-google-oauth",
+    "project_slug": "pyramid-googleauth",
     "pkg_name": "h_pyramid_google_oauth",
     "options": {
         "disable_replay": [

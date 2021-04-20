@@ -5,8 +5,8 @@ from h_matchers import Any
 from jwt import InvalidTokenError
 from oauthlib.oauth2.rfc6749.errors import InvalidClientError, InvalidGrantError
 
-from h_pyramid_google_oauth.exceptions import BadOAuth2Config, UserNotAuthenticated
-from h_pyramid_google_oauth.services.google_auth import GoogleAuthService, factory
+from pyramid_googleauth.exceptions import BadOAuth2Config, UserNotAuthenticated
+from pyramid_googleauth.services.google_auth import GoogleAuthService, factory
 
 # We do this all the time here, but it's ok for the tests of a file to poke
 # about in the innards of that file
@@ -162,22 +162,22 @@ class TestGoogleAuthService:
 
     @pytest.fixture(autouse=True)
     def os(self, patch):
-        return patch("h_pyramid_google_oauth.services.google_auth.os")
+        return patch("pyramid_googleauth.services.google_auth.os")
 
     @pytest.fixture(autouse=True)
     def jwt(self, patch):
-        return patch("h_pyramid_google_oauth.services.google_auth.jwt")
+        return patch("pyramid_googleauth.services.google_auth.jwt")
 
     @pytest.fixture(autouse=True)
     def Flow(self, patch):
-        return patch("h_pyramid_google_oauth.services.google_auth.Flow")
+        return patch("pyramid_googleauth.services.google_auth.Flow")
 
 
 class TestFactory:
     def test_it(self, pyramid_request, signature_service):
         pyramid_request.registry.settings = {
-            "h_pyramid_google_oauth.google_client_id": sentinel.google_client_id,
-            "h_pyramid_google_oauth.google_client_secret": sentinel.google_client_secret,
+            "pyramid_googleauth.google_client_id": sentinel.google_client_id,
+            "pyramid_googleauth.google_client_secret": sentinel.google_client_secret,
         }
 
         result = factory(sentinel.context, pyramid_request)

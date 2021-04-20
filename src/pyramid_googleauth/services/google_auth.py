@@ -6,8 +6,8 @@ from google_auth_oauthlib.flow import Flow
 from jwt import InvalidTokenError
 from oauthlib.oauth2.rfc6749.errors import InvalidClientError, InvalidGrantError
 
-from h_pyramid_google_oauth.exceptions import BadOAuth2Config, UserNotAuthenticated
-from h_pyramid_google_oauth.services.signature import SignatureService
+from pyramid_googleauth.exceptions import BadOAuth2Config, UserNotAuthenticated
+from pyramid_googleauth.services.signature import SignatureService
 
 
 class GoogleAuthService:
@@ -186,12 +186,12 @@ def factory(_context, request):
             # from env to env. So we read these from environment variables in
             # `app.py`
             "client_id": request.registry.settings[
-                "h_pyramid_google_oauth.google_client_id"
+                "pyramid_googleauth.google_client_id"
             ],
             "client_secret": request.registry.settings[
-                "h_pyramid_google_oauth.google_client_secret"
+                "pyramid_googleauth.google_client_secret"
             ],
             # Until this route exists we'll use a hard coded value
-            "redirect_uri": request.route_url("h_pyramid_google_oauth_login_callback"),
+            "redirect_uri": request.route_url("pyramid_googleauth_login_callback"),
         },
     )
