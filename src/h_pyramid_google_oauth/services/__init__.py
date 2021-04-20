@@ -1,2 +1,0 @@
-from h_pyramid_google_oauth.services.google_auth import GoogleAuthService
-from h_pyramid_google_oauth.services.signature import SignatureService

@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 import logging
 
 import pytest
@@ -17,7 +18,7 @@ class TestLogin:
                 dict(
                     response_type="code",
                     client_id="google_client_id",
-                    redirect_uri=route_url("h_pyramid_google_oauth_login_callback"),
+                    redirect_uri=route_url("pyramid_googleauth_login_callback"),
                     scope=Any.string(),
                     state=Any.string(),
                     access_type="offline",
@@ -30,13 +31,11 @@ class TestLogin:
 
 class TestLoginCallback:
     @pytest.mark.usefixtures("mock_google_auth_service")
-    def test_it_redirects_to_success_redirect(
-        self, app, route_url, nonce, pyramid_settings
-    ):
+    def test_it_redirects_to_success_redirect(self, app, nonce, pyramid_settings):
         response = app.get("/ui/api/login_callback", params={"state": nonce})
 
         assert response == temporary_redirect_to(
-            pyramid_settings["h_pyramid_google_oauth.login_success_redirect_url"]
+            pyramid_settings["pyramid_googleauth.login_success_redirect_url"]
         )
         # Webtest handles cookies so if we follow the redirect to the admin
         # page we should be authenticated and get a 200 OK not a redirect to
@@ -56,7 +55,7 @@ class TestLoginCallback:
             ),
             pytest.param(
                 {
-                    # An invalid "state" param in the query string of the URL that Google calls us on.
+                    # An invalid "state" param in the query string of the URL that Google calls
                     "state": "invalid"
                 },
                 "State check failed",
@@ -68,13 +67,18 @@ class TestLoginCallback:
                 id="State param missing",
                 marks=pytest.mark.xfail(
                     raises=TypeError,
-                    reason="This is a bug: it crashes if there's no 'state' in the request from Google",
+                    reason="Bug: it crashes if there's no 'state' in the request from Google",
                 ),
             ),
         ],
     )
     def test_if_theres_a_problem_it_redirects_to_the_login_failure_page(
-        self, app, caplog, route_url, params, logged_text
+        self,
+        app,
+        caplog,
+        route_url,
+        params,
+        logged_text,
     ):
         caplog.set_level(logging.WARNING)
 
@@ -82,7 +86,7 @@ class TestLoginCallback:
 
         assert logged_text in caplog.text
         assert response == temporary_redirect_to(
-            route_url("h_pyramid_google_oauth_login_failure")
+            route_url("pyramid_googleauth_login_failure")
         )
 
     @pytest.fixture
@@ -96,9 +100,7 @@ class TestLogout:
     ):
         response = app.get("/ui/api/logout")
 
-        assert response == temporary_redirect_to(
-            route_url("h_pyramid_google_oauth_login")
-        )
+        assert response == temporary_redirect_to(route_url("pyramid_googleauth_login"))
 
     @pytest.mark.usefixtures("logged_in")
     def test_if_youre_logged_in_it_logs_you_out_and_redirects_you_to_the_login_page(
@@ -107,9 +109,7 @@ class TestLogout:
         response = app.get("/ui/api/logout")
 
         assert response == temporary_redirect_to(
-            route_url(
-                "h_pyramid_google_oauth_login", _query={"hint": "user@hypothes.is"}
-            )
+            route_url("pyramid_googleauth_login", _query={"hint": "user@hypothes.is"})
         )
         # Verify that it has logged us out by trying to get the admin page and
         # verifying that it redirects rather than 200ing.

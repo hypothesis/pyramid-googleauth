@@ -7,14 +7,14 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.security import forget, remember
 from pyramid.view import view_config
 
-from h_pyramid_google_oauth.exceptions import UserNotAuthenticated
-from h_pyramid_google_oauth.security import GoogleSecurityPolicy
-from h_pyramid_google_oauth.services import GoogleAuthService
+from pyramid_googleauth.exceptions import UserNotAuthenticated
+from pyramid_googleauth.security import GoogleSecurityPolicy
+from pyramid_googleauth.services import GoogleAuthService
 
 LOG = getLogger(__name__)
 
 
-@view_config(route_name="h_pyramid_google_oauth_login")
+@view_config(route_name="pyramid_googleauth_login")
 def login(_context, request):
     """Redirect to the Google login prompt."""
 
@@ -32,7 +32,7 @@ def login(_context, request):
     return HTTPFound(location=location)
 
 
-@view_config(route_name="h_pyramid_google_oauth_login_callback")
+@view_config(route_name="pyramid_googleauth_login_callback")
 def login_callback(_context, request):
     """Handle a call back from the Google login prompt."""
 
@@ -46,23 +46,21 @@ def login_callback(_context, request):
         # Looks like the user isn't supposed to be here, but we need to give
         # them a way to fix this
         LOG.warning("User failed login", exc_info=err)
-        return HTTPFound(
-            location=request.route_url("h_pyramid_google_oauth_login_failure")
-        )
+        return HTTPFound(location=request.route_url("pyramid_googleauth_login_failure"))
 
     # This doesn't power authentication, just stores useful things around
     request.session.update({"user": user})
 
     return HTTPFound(
         location=request.registry.settings[
-            "h_pyramid_google_oauth.login_success_redirect_url"
+            "pyramid_googleauth.login_success_redirect_url"
         ],
         # This causes the users email to be stored as the authenticated user
         headers=remember(request, user["email"], iface=GoogleSecurityPolicy),
     )
 
 
-@view_config(route_name="h_pyramid_google_oauth_logout")
+@view_config(route_name="pyramid_googleauth_logout")
 def logout(_context, request):
     """Log the user out and redirect to the login page."""
 
@@ -75,14 +73,14 @@ def logout(_context, request):
 
     # Tell the authentication system to forget the user and redirect
     return HTTPFound(
-        location=request.route_url("h_pyramid_google_oauth_login", _query=query),
+        location=request.route_url("pyramid_googleauth_login", _query=query),
         headers=forget(request),
     )
 
 
 @view_config(
-    route_name="h_pyramid_google_oauth_login_failure",
-    renderer="h_pyramid_google_oauth:templates/login_failure.html.jinja2",
+    route_name="pyramid_googleauth_login_failure",
+    renderer="pyramid_googleauth:templates/login_failure.html.jinja2",
 )
 def login_failure(request):
     """Render a page when the user has failed to login."""

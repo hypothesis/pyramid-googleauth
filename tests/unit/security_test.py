@@ -3,7 +3,7 @@ from unittest.mock import sentinel
 import pytest
 from pyramid.security import Allowed, Denied
 
-from h_pyramid_google_oauth.security import (
+from pyramid_googleauth.security import (
     DEFAULT_PERMISSION,
     GoogleSecurityPolicy,
     Identity,

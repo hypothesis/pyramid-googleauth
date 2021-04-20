@@ -2,10 +2,9 @@ import functools
 from unittest import mock
 
 import pytest
-
 from pyramid.testing import DummyRequest, testConfig
 
-from h_pyramid_google_oauth.routes import add_routes
+from pyramid_googleauth.routes import add_routes
 
 
 def _autopatcher(request, target, **kwargs):
@@ -26,10 +25,10 @@ def patch(request):
 @pytest.fixture
 def pyramid_settings():
     return {
-        "h_pyramid_google_oauth.secret": "not-very-secret",
-        "h_pyramid_google_oauth.google_client_id": "google_client_id",
-        "h_pyramid_google_oauth.google_client_secret": "google_client_secret",
-        "h_pyramid_google_oauth.login_success_redirect_url": "http://example.com/inside",
+        "pyramid_googleauth.secret": "not-very-secret",
+        "pyramid_googleauth.google_client_id": "google_client_id",
+        "pyramid_googleauth.google_client_secret": "google_client_secret",
+        "pyramid_googleauth.login_success_redirect_url": "http://example.com/inside",
     }
 
 

@@ -54,7 +54,7 @@ testall: python
 	@tox -qe \{`hdev python_version --style tox --include-future`\}-tests
 
 .PHONY: sure
-sure: checkformatting lint test coverage
+sure: checkformatting lint test coverage functests
 
 .PHONY: coverage
 coverage: python
