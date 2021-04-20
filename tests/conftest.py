@@ -3,6 +3,10 @@ from unittest import mock
 
 import pytest
 
+from pyramid.testing import DummyRequest, testConfig
+
+from h_pyramid_google_oauth.routes import add_routes
+
 
 def _autopatcher(request, target, **kwargs):
     """Patch and cleanup automatically. Wraps :py:func:`mock.patch`."""
@@ -27,3 +31,12 @@ def pyramid_settings():
         "h_pyramid_google_oauth.google_client_secret": "google_client_secret",
         "h_pyramid_google_oauth.login_success_redirect_url": "http://example.com/inside",
     }
+
+
+@pytest.fixture
+def route_url():
+    request = DummyRequest(environ={"SERVER_NAME": "localhost"})
+
+    with testConfig(request=request) as config:
+        add_routes(config)
+        yield functools.partial(request.route_url, _scheme="https")
