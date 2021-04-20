@@ -2,9 +2,11 @@ import functools
 from unittest import mock
 
 import pytest
+from pyramid.security import Allowed, Denied
 from pyramid.testing import DummyRequest, testConfig
 
 from pyramid_googleauth.routes import add_routes
+from pyramid_googleauth.security import GoogleSecurityPolicy
 
 
 def _autopatcher(request, target, **kwargs):
@@ -39,3 +41,24 @@ def route_url():
     with testConfig(request=request) as config:
         add_routes(config)
         yield functools.partial(request.route_url, _scheme="https")
+
+
+class DummyGoogleSecurityPolicy(GoogleSecurityPolicy):
+    def identity(self, request):
+        userid = self.authenticated_userid(request)
+
+        if userid and userid.endswith("@hypothes.is"):
+            return ["admin"]
+
+        return []
+
+    def permits(self, request, context, permission):
+        if permission in self.identity(request):
+            return Allowed("allowed")
+
+        return Denied("denied")
+
+
+@pytest.fixture
+def policy():
+    return DummyGoogleSecurityPolicy()
