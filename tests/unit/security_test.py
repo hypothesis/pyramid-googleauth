@@ -3,31 +3,13 @@ from unittest.mock import sentinel
 import pytest
 from pyramid.security import Allowed, Denied
 
-from pyramid_googleauth.security import (
-    DEFAULT_PERMISSION,
-    GoogleSecurityPolicy,
-    Identity,
-)
-
 
 class TestGoogleSecurityPolicy:
     @pytest.mark.parametrize(
         "userid,expected_identity",
         [
-            (
-                "testuser@hypothes.is",
-                Identity(
-                    "testuser@hypothes.is",
-                    [DEFAULT_PERMISSION],
-                ),
-            ),
-            (
-                "testuser@example.com",
-                Identity(
-                    "",
-                    [],
-                ),
-            ),
+            ("testuser@hypothes.is", ["admin"]),
+            ("testuser@example.com", []),
         ],
     )
     def test_identity(self, policy, pyramid_request, userid, expected_identity):
@@ -36,7 +18,7 @@ class TestGoogleSecurityPolicy:
         assert policy.identity(pyramid_request) == expected_identity
 
     def test_identity_when_no_user_is_logged_in(self, policy, pyramid_request):
-        assert policy.identity(pyramid_request) == Identity("", [])
+        assert policy.identity(pyramid_request) == []
 
     def test_authenticated_userid(self, policy, pyramid_request):
         pyramid_request.session["auth.userid"] = "testuser@hypothes.is"
@@ -46,7 +28,7 @@ class TestGoogleSecurityPolicy:
     @pytest.mark.parametrize(
         "permission,expected_result",
         [
-            (DEFAULT_PERMISSION, Allowed("allowed")),
+            ("admin", Allowed("allowed")),
             ("some-other-permission", Denied("denied")),
         ],
     )
@@ -63,7 +45,3 @@ class TestGoogleSecurityPolicy:
 
     def test_forget(self, policy, pyramid_request):
         assert policy.forget(pyramid_request) == []
-
-    @pytest.fixture
-    def policy(self):
-        return GoogleSecurityPolicy()

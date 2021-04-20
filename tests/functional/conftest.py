@@ -6,7 +6,6 @@ from pyramid.session import SignedCookieSessionFactory
 from webtest import TestApp
 
 from pyramid_googleauth.routes import add_routes
-from pyramid_googleauth.security import DEFAULT_PERMISSION, GoogleSecurityPolicy
 from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
@@ -42,7 +41,7 @@ def logged_in(
 
 
 @pytest.fixture
-def pyramid_app(pyramid_settings):
+def pyramid_app(pyramid_settings, policy):
 
     config = pyramid.config.Configurator(settings=pyramid_settings)
     config.include("pyramid_services")
@@ -54,7 +53,7 @@ def pyramid_app(pyramid_settings):
         serializer=pyramid.session.JSONSerializer(),
     )
     config.set_session_factory(session_factory)
-    config.set_security_policy(GoogleSecurityPolicy())
+    config.set_security_policy(policy)
 
     def protected_view(_context, _request):
         return Response(body="ok", status=200)
@@ -62,9 +61,7 @@ def pyramid_app(pyramid_settings):
     def logged_out(request):
         return HTTPFound(location=request.route_url("pyramid_googleauth_login"))
 
-    config.add_view(
-        protected_view, route_name="protected_view", permission=DEFAULT_PERMISSION
-    )
+    config.add_view(protected_view, route_name="protected_view", permission="admin")
     config.add_route("protected_view", "/inside")
     config.add_forbidden_view(logged_out)
 
