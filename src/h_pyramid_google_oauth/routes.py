@@ -29,3 +29,4 @@ def add_routes(config):
             "h_pyramid_google_oauth.login_failure_route", "/ui/api/login_failure"
         ),
     )
+    config.scan()
