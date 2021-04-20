@@ -8,6 +8,7 @@ help:
 	@echo "make release           Tag a release and trigger deployment to PyPI"
 	@echo "make initialrelease    Create the first release of a package"
 	@echo "make test              Run the unit tests"
+	@echo "make functests         Run the functional tests"
 	@echo "make testall           Run the unit tests against all versions of Python"
 	@echo "make sure              Make sure that the formatter, linter, tests, etc all pass"
 	@echo "make coverage          Print the unit test coverage report"
@@ -43,6 +44,10 @@ initialrelease: python
 .PHONY: test
 test: python
 	@tox -qe `hdev python_version --style tox --first`-tests
+
+.PHONY: functests
+functests: python
+	@tox -qe functests
 
 .PHONY: testall
 testall: python
