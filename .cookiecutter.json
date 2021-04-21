@@ -1,8 +1,8 @@
 {
     "project_name": "pyramid-googleauth",
-    "description": "An example library",
+    "description": "Google auth pyramid policy and views",
     "project_slug": "pyramid-googleauth",
-    "pkg_name": "h_pyramid_google_oauth",
+    "pkg_name": "pyramid_googleauth",
     "options": {
         "disable_replay": [
             "README.md",

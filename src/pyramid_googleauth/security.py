@@ -1,7 +1,5 @@
 from pyramid.authentication import SessionAuthenticationHelper
 
-DEFAULT_PERMISSION = "admin"
-
 
 class GoogleSecurityPolicy:
     def __init__(self):
