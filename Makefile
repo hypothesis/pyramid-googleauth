@@ -1,6 +1,9 @@
 .PHONY: help
 help:
 	@echo "make help              Show this help message"
+	@echo "make dev               Run the demo app"
+	@echo "make devdata           Set standard environment variables for a development"
+	@echo "                       environment"
 	@echo "make lint              Code quality analysis (pylint)"
 	@echo "make format            Correctly format the code"
 	@echo "make checkformatting   Crash if the code isn't correctly formatted"
@@ -16,6 +19,14 @@ help:
 	@echo "                       dependencies, etc)"
 	@echo "make template          Replay the cookiecutter project template over this"
 	@echo "                       project. Warning! This can destroy changes."
+
+.PHONY: dev
+dev: python
+	@tox -qe dev
+
+.PHONY: devdata
+devdata: python
+	@tox -qe dev --run-command 'python bin/devdata'
 
 .PHONY: lint
 lint: python

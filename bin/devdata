@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+import os
+import pathlib
+import shutil
+import subprocess
+import tempfile
+
+if __name__ == "__main__":
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        git_dir = os.path.join(tmpdirname, "devdata")
+        subprocess.check_call(
+            ["git", "clone", "git@github.com:hypothesis/devdata.git", git_dir]
+        )
+        shutil.copyfile(
+            os.path.join(git_dir, "pyramid-googleauth", "devdata.env"),
+            os.path.join(pathlib.Path(__file__).parent.parent, ".devdata.env"),
+        )
