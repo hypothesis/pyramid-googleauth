@@ -44,7 +44,6 @@ def logged_in(
 def pyramid_app(pyramid_settings, policy):
 
     config = pyramid.config.Configurator(settings=pyramid_settings)
-    config.include("pyramid_services")
     config.include("pyramid_googleauth")
     add_routes(config)
 
