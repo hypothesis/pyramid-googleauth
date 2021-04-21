@@ -1,4 +1,4 @@
-from pyramid_googleauth.routes import add_routes
+from pyramid_googleauth._routes import add_routes
 from pyramid_googleauth.security import GoogleSecurityPolicy
 from pyramid_googleauth.services import GoogleAuthService, SignatureService
 
