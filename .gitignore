@@ -3,6 +3,7 @@
 .coverage.*
 .tox
 .idea
+.devdata.env
 
 build/
 dist/
