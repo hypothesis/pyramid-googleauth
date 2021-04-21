@@ -5,7 +5,7 @@ import pytest
 from pyramid.security import Allowed, Denied
 from pyramid.testing import DummyRequest, testConfig
 
-from pyramid_googleauth.routes import add_routes
+from pyramid_googleauth._routes import add_routes
 from pyramid_googleauth.security import GoogleSecurityPolicy
 
 

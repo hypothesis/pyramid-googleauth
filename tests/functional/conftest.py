@@ -5,7 +5,7 @@ from pyramid.response import Response
 from pyramid.session import SignedCookieSessionFactory
 from webtest import TestApp
 
-from pyramid_googleauth.routes import add_routes
+from pyramid_googleauth._routes import add_routes
 from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
