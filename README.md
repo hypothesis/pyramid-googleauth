@@ -1,72 +1,71 @@
 # pyramid-googleauth
 
-An example library
+"Sign in with Google" for Pyramid. Provides a Pyramid security policy and views
+for Google's OAuth flow.
 
-Usage
------
+## Usage
 
-Provides a pyramid security policy and the necessary views to complete google's oauth flow.
+To use pyramid-googleauth with your Pyramid app:
 
+### 1. Create a Google client ID and secret
 
-## Settings
+1. Register a Google OAuth client:
 
+   1. Create a new **Google Cloud Platform project**.
 
-Secret and google's configuration:
+      Go to https://console.cloud.google.com/projectcreate and create a new project,
+      or use an existing Google Cloud Platform project.
 
-`pyramid_googleauth.secret` 
-`pyramid_googleauth.google_client_id`
-`pyramid_googleauth.google_client_secret`
+   2. Configure the project's **OAuth consent screen** settings:
 
-Where to redirect after a successful login:
+      1. Go to https://console.cloud.google.com/apis/credentials/consent
+         and make sure the correct project is selected from the projects
+         dropdown menu in the top left.
 
-`pyramid_googleauth.login_success_redirect_url`
+      2. Under **User Type** select **Internal** and then click <kbd>CREATE</kbd>.
 
+         Note that **Internal** means that only users within the Google
+         organization that contains the project will be able to log in.
+         If you want _anyone_ to be able to log in to your app with their
+         Google account you have to select **External**.
 
-The extension provides several routes, their locations are configurable with these settings:
+      3. Fill out the app name, user support email and other fields and click <kbd>SAVE AND CONTINUE</kbd>.
 
-`pyramid_googleauth.login_route` Defaults to /ui/api/login
-`pyramid_googleauth.login_callback_route` Defaults to /ui/api/login_callback
-`pyramid_googleauth.logout_route` Defaults to /ui/api/logout
+      4. On the **Scopes** screen click <kbd>ADD OR REMOVE SCOPES</kbd>,
+         select the `..auth/userinfo.email`, `..auth/userinfo.profile` and `openid` scopes,
+         and click <kbd>UPDATE</kbd> and <kbd>SAVE AND CONTINUE</kbd>.
 
-`pyramid_googleauth.login_failure_route` Defaults to /ui/api/login_failure
+   3. Configure the project's **Credentials** settings:
 
+      1. Go to https://console.cloud.google.com/apis/credentials
+         and make sure the correct project is selected from the projects
+         dropdown menu in the top left.
 
-## Installation
+      2. Click <kbd><kbd>CREATE CREDENTIALS</kbd> &rarr; <kbd>OAuth client ID</kbd></kbd>.
 
-- Include the package in your project's dependencies
+      3. Under **Application type** select **Web application**.
 
-- Set the necessary settings
+      4. Enter a **Name**.
 
-- Include the extension in your pyramid app
+      5. Under **Authorized redirect URIs** click <kbd>ADD URI</kbd> and enter
+         `https://<YOUR_DOMAIN>/googleauth/login/callback`.
 
-```config.include("pyramid_googleauth")```
+      6. Click <kbd>CREATE</kbd>.
 
+      7. Note the **Client ID** and **Client Secret** that are created for you.
+         You'll need to use these for the `pyramid_googleauth.google_client_id`
+         and `pyramid_googleauth.google_client_secret` settings in your app.
 
-- Create your own security policy based on `GoogleSecurityPolicy` overriding `identity` and `permits`. Use your own permissions and identity structure.
+### 2. Add pyramid-googleauth to your Pyramid app
 
+1. Add [pyramid-googleauth](https://pypi.org/project/pyramid-googleauth/) to
+   your app's Python requirements.
 
-```
-class CheckmateGoogleSecurityPolicy(GoogleSecurityPolicy):
-    def identity(self, request):
-        userid = self.authenticated_userid(request)
+2. Add pyramid-googleauth to your app's code:
 
-        if userid and userid.endswith("@hypothes.is"):
-            return Identity(
-                userid, permissions=[Permissions.ADMIN, Permissions.ADD_TO_ALLOW_LIST]
-            )
-
-        return Identity("", [])
-
-    def permits(self, request, context, permission):
-        return _permits(self, request, context, permission)
-```
-
-
-- Set your new policy in pyramid
-
-`config.set_security_policy(SecurityPolicy())`
-
-
+   Your app needs to set a session factory, a security policy, and a handful of
+   pyramid-googleauth settings, before doing `config.include("pyramid-googleauth")`.
+   See [the test app](dev/app.py) for a working example to copy from.
 
 Hacking
 -------
@@ -94,8 +93,48 @@ in your current working directory. You need to be in the
 process:
 
 ```terminal
-cd h-pyramid-google-oauth
+cd pyramid-googleauth
 ```
+
+#### Run the test app
+
+`pyramid-googleauth` comes with a demo Pyramid app that you can use to test the
+extension. To run the test app:
+
+1. Set the `PYRAMID_GOOGLEAUTH_CLIENT_ID`, `PYRAMID_GOOGLEAUTH_CLIENT_SECRET`
+   and `PYRAMID_GOOGLEAUTH_SECRET` environment variables.
+
+   Hypothesis developers can set these by just running `make devdata`:
+
+   ```terminal
+   make devdata
+   ```
+
+   <details>
+   <summary>If you get a permissions error</summary>
+
+   If you get a permissions error when running `make devdata` then you'll have
+   to create your own values and set the environment variables yourself. Follow
+   the instructions above to
+   [create a Google client ID and secret](#1-create-a-google-client-id-and-secret)
+   and use `http://localhost:6547/googleauth/login/callback` for the
+   **authorized redirect URI**. Then set the environment variables to the
+   client ID and secret that you created:
+
+   ```terminal
+   export PYRAMID_GOOGLEAUTH_CLIENT_ID='765...2g6.apps.googleusercontent.com'
+   export PYRAMID_GOOGLEAUTH_CLIENT_SECRET='Dfj...Y6i'
+   ```
+
+   You also need to set the `PYRAMID_GOOGLEAUTH_SECRET` environment variable
+   for creating OAuth 2.0 `state` params. This can be set to any
+   securely-generated random string:
+
+   ```terminal
+   export PYRAMID_GOOGLEAUTH_SECRET='abc...123'
+   ```
+
+   </details>
 
 #### Run the tests
 
@@ -103,9 +142,9 @@ cd h-pyramid-google-oauth
 make test
 ```
 
-**That's it!** You’ve finished setting up your h-pyramid-google-oauth
-development environment. Run `make help` to see all the commands that're
-available for linting, code formatting, packaging, etc.
+**That's it!** You’ve finished setting up your pyramid-googleauth development
+environment. Run `make help` to see all the commands that're available for
+linting, code formatting, packaging, etc.
 
 ### Updating the Cookiecutter scaffolding
 
