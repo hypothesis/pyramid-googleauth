@@ -14,7 +14,7 @@ from pyramid_googleauth.services import GoogleAuthService
 LOG = getLogger(__name__)
 
 
-@view_config(route_name="pyramid_googleauth_login")
+@view_config(route_name="pyramid_googleauth.login")
 def login(_context, request):
     """Redirect to the Google login prompt."""
 
@@ -32,7 +32,7 @@ def login(_context, request):
     return HTTPFound(location=location)
 
 
-@view_config(route_name="pyramid_googleauth_login_callback")
+@view_config(route_name="pyramid_googleauth.login.callback")
 def login_callback(_context, request):
     """Handle a call back from the Google login prompt."""
 
@@ -46,7 +46,7 @@ def login_callback(_context, request):
         # Looks like the user isn't supposed to be here, but we need to give
         # them a way to fix this
         LOG.warning("User failed login", exc_info=err)
-        return HTTPFound(location=request.route_url("pyramid_googleauth_login_failure"))
+        return HTTPFound(location=request.route_url("pyramid_googleauth.login.failure"))
 
     # This doesn't power authentication, just stores useful things around
     request.session.update({"user": user})
@@ -60,7 +60,7 @@ def login_callback(_context, request):
     )
 
 
-@view_config(route_name="pyramid_googleauth_logout")
+@view_config(route_name="pyramid_googleauth.logout")
 def logout(_context, request):
     """Log the user out and redirect to the login page."""
 
@@ -73,13 +73,13 @@ def logout(_context, request):
 
     # Tell the authentication system to forget the user and redirect
     return HTTPFound(
-        location=request.route_url("pyramid_googleauth_login", _query=query),
+        location=request.route_url("pyramid_googleauth.login", _query=query),
         headers=forget(request),
     )
 
 
 @view_config(
-    route_name="pyramid_googleauth_login_failure",
+    route_name="pyramid_googleauth.login.failure",
     renderer="pyramid_googleauth:templates/login_failure.html.jinja2",
 )
 def login_failure(request):
