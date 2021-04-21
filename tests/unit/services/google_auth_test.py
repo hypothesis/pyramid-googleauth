@@ -174,15 +174,15 @@ class TestGoogleAuthService:
 
 
 class TestFactory:
-    def test_it(self, pyramid_request, signature_service):
+    def test_it(self, pyramid_request):
         pyramid_request.registry.settings = {
             "pyramid_googleauth.google_client_id": sentinel.google_client_id,
             "pyramid_googleauth.google_client_secret": sentinel.google_client_secret,
+            "pyramid_googleauth.secret": "not_secret",
         }
 
         result = factory(sentinel.context, pyramid_request)
 
-        assert result._signature_service == signature_service
         assert result._client_id == sentinel.google_client_id
         assert result._client_secret == sentinel.google_client_secret
         assert result._redirect_uri == "http://example.com/googleauth/login/callback"

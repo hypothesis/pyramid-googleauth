@@ -9,18 +9,21 @@ from pyramid.view import view_config
 
 from pyramid_googleauth.exceptions import UserNotAuthenticated
 from pyramid_googleauth.security import GoogleSecurityPolicy
-from pyramid_googleauth.services import GoogleAuthService
+from pyramid_googleauth.services.google_auth import (
+    factory as google_auth_service_factory,
+)
 
 LOG = getLogger(__name__)
 
 
 @view_config(route_name="pyramid_googleauth.login")
-def login(_context, request):
+def login(context, request):
     """Redirect to the Google login prompt."""
 
     authenticated_email = request.authenticated_userid
 
-    location = request.find_service(GoogleAuthService).login_url(
+    google_auth = google_auth_service_factory(context, request)
+    location = google_auth.login_url(
         # The user is not logged in, so force an account request, otherwise
         # Google might remember the user and put them straight through, making
         # it impossible to really "logout"
@@ -33,12 +36,12 @@ def login(_context, request):
 
 
 @view_config(route_name="pyramid_googleauth.login.callback")
-def login_callback(_context, request):
+def login_callback(context, request):
     """Handle a call back from the Google login prompt."""
 
     request.session.invalidate()
 
-    google_auth = request.find_service(GoogleAuthService)
+    google_auth = google_auth_service_factory(context, request)
     try:
         user, _credentials = google_auth.exchange_auth_code(request.url)
 

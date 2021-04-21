@@ -180,7 +180,9 @@ class GoogleAuthService:
 
 def factory(_context, request):
     return GoogleAuthService(
-        signature_service=request.find_service(SignatureService),
+        signature_service=SignatureService(
+            secret=request.registry.settings["pyramid_googleauth.secret"]
+        ),
         client_config={
             # The client id and secret are provided by Google and are different
             # from env to env. So we read these from environment variables in
