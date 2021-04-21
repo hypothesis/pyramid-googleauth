@@ -66,7 +66,7 @@ class TestLoginCallback:
 
         response = login_callback(sentinel.context, pyramid_request)
 
-        assert response.location == "http://example.com/ui/api/login_failure"
+        assert response.location == "http://example.com/googleauth/login/failure"
         assert "Remember-Header" not in list(response.headers)
 
 
@@ -80,7 +80,7 @@ class TestLogout:
         response = logout(sentinel.context, pyramid_request)
 
         assert pyramid_request.session == {}
-        assert response.location == "http://example.com/ui/api/login"
+        assert response.location == "http://example.com/googleauth/login"
         assert "Forget-Header" in list(response.headers)
 
     def test_it_redirects_with_a_login_hint_if_possible(

@@ -11,14 +11,14 @@ class TestLogin:
     def test_it_logs_the_user_in_and_redirects_to_google_login_page(
         self, app, route_url
     ):
-        response = app.get("/ui/api/login")
+        response = app.get("/googleauth/login")
 
         assert response == temporary_redirect_to(
             Any.url.matching("https://accounts.google.com/o/oauth2/v2/auth").with_query(
                 dict(
                     response_type="code",
                     client_id="google_client_id",
-                    redirect_uri=route_url("pyramid_googleauth_login_callback"),
+                    redirect_uri=route_url("pyramid_googleauth.login.callback"),
                     scope=Any.string(),
                     state=Any.string(),
                     access_type="offline",
@@ -32,7 +32,7 @@ class TestLogin:
 class TestLoginCallback:
     @pytest.mark.usefixtures("mock_google_auth_service")
     def test_it_redirects_to_success_redirect(self, app, nonce, pyramid_settings):
-        response = app.get("/ui/api/login_callback", params={"state": nonce})
+        response = app.get("/googleauth/login/callback", params={"state": nonce})
 
         assert response == temporary_redirect_to(
             pyramid_settings["pyramid_googleauth.login_success_redirect_url"]
@@ -82,11 +82,11 @@ class TestLoginCallback:
     ):
         caplog.set_level(logging.WARNING)
 
-        response = app.get("/ui/api/login_callback", params)
+        response = app.get("/googleauth/login/callback", params)
 
         assert logged_text in caplog.text
         assert response == temporary_redirect_to(
-            route_url("pyramid_googleauth_login_failure")
+            route_url("pyramid_googleauth.login.failure")
         )
 
     @pytest.fixture
@@ -98,18 +98,18 @@ class TestLogout:
     def test_if_youre_not_logged_in_it_redirects_you_to_the_login_page(
         self, app, route_url
     ):
-        response = app.get("/ui/api/logout")
+        response = app.get("/googleauth/logout")
 
-        assert response == temporary_redirect_to(route_url("pyramid_googleauth_login"))
+        assert response == temporary_redirect_to(route_url("pyramid_googleauth.login"))
 
     @pytest.mark.usefixtures("logged_in")
     def test_if_youre_logged_in_it_logs_you_out_and_redirects_you_to_the_login_page(
         self, app, route_url
     ):
-        response = app.get("/ui/api/logout")
+        response = app.get("/googleauth/logout")
 
         assert response == temporary_redirect_to(
-            route_url("pyramid_googleauth_login", _query={"hint": "user@hypothes.is"})
+            route_url("pyramid_googleauth.login", _query={"hint": "user@hypothes.is"})
         )
         # Verify that it has logged us out by trying to get the admin page and
         # verifying that it redirects rather than 200ing.

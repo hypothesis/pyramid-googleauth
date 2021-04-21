@@ -192,6 +192,6 @@ def factory(_context, request):
                 "pyramid_googleauth.google_client_secret"
             ],
             # Until this route exists we'll use a hard coded value
-            "redirect_uri": request.route_url("pyramid_googleauth_login_callback"),
+            "redirect_uri": request.route_url("pyramid_googleauth.login.callback"),
         },
     )

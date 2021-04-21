@@ -35,7 +35,7 @@ def logged_in(
     # `app.cookiejar`. Webtest will automatically send the cookie in subsequent
     # requests made with `app`.
     app.get(
-        route_url("pyramid_googleauth_login_callback"),
+        route_url("pyramid_googleauth.login.callback"),
         params={"state": signature_service.get_nonce()},
     )
 
@@ -59,7 +59,7 @@ def pyramid_app(pyramid_settings, policy):
         return Response(body="ok", status=200)
 
     def logged_out(request):
-        return HTTPFound(location=request.route_url("pyramid_googleauth_login"))
+        return HTTPFound(location=request.route_url("pyramid_googleauth.login"))
 
     config.add_view(protected_view, route_name="protected_view", permission="admin")
     config.add_route("protected_view", "/inside")
