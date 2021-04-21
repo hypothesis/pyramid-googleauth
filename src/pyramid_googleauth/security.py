@@ -1,21 +1,25 @@
+from functools import lru_cache
+
 from pyramid.authentication import SessionAuthenticationHelper
 
 
 class GoogleSecurityPolicy:
-    def __init__(self):
-        self._session_authentication_helper = SessionAuthenticationHelper()
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def session():
+        return SessionAuthenticationHelper(prefix="googleauth.")
 
     def identity(self, request):  # pragma: no cover
         raise NotImplementedError()
 
     def authenticated_userid(self, request):
-        return self._session_authentication_helper.authenticated_userid(request)
+        return self.session().authenticated_userid(request)
 
     def permits(self, request, context, permission):  # pragma: no cover
         raise NotImplementedError()
 
     def remember(self, request, userid, **kwargs):
-        return self._session_authentication_helper.remember(request, userid, **kwargs)
+        return self.session().remember(request, userid, **kwargs)
 
     def forget(self, request, **kwargs):
-        return self._session_authentication_helper.forget(request, **kwargs)
+        return self.session().forget(request, **kwargs)
