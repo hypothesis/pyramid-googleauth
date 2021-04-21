@@ -2,7 +2,7 @@
 branch = True
 parallel = True
 source =
-    h_pyramid_google_oauth
+    pyramid_googleauth
     tests/unit
 
 [paths]

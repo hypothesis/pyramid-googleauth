@@ -1,13 +1,13 @@
 {
     "project_name": "pyramid-googleauth",
-    "description": "Google auth pyramid policy and views",
+    "description": "'Sign in with Google' for Pyramid",
     "project_slug": "pyramid-googleauth",
     "pkg_name": "pyramid_googleauth",
     "options": {
         "disable_replay": [
             "README.md",
             "setup.cfg",
-            "src/h_pyramid_google_oauth/__init__.py"
+            "src/pyramid_googleauth/__init__.py"
         ]
     },
     "_template": "gh:hypothesis/h-cookiecutter-pypackage"
