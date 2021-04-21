@@ -5,13 +5,13 @@ class GoogleSecurityPolicy:
     def __init__(self):
         self._session_authentication_helper = SessionAuthenticationHelper()
 
-    def identity(self, request):
+    def identity(self, request):  # pragma: no cover
         raise NotImplementedError()
 
     def authenticated_userid(self, request):
         return self._session_authentication_helper.authenticated_userid(request)
 
-    def permits(self, request, context, permission):
+    def permits(self, request, context, permission):  # pragma: no cover
         raise NotImplementedError()
 
     def remember(self, request, userid, **kwargs):
