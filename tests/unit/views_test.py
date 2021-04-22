@@ -64,7 +64,7 @@ class TestLoginCallback:
         response = login_callback(sentinel.context, pyramid_request)
 
         assert pyramid_request.session == {"user": user}
-        assert response.location == "http://example.com/inside"
+        assert response.location == "/protected"
         assert "Remember-Header" in list(response.headers)
 
     def test_it_bails_out_if_the_user_is_not_authenticated(

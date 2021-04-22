@@ -1,11 +1,7 @@
-import pyramid
 import pytest
-from pyramid.httpexceptions import HTTPFound
-from pyramid.response import Response
-from pyramid.session import SignedCookieSessionFactory
 from webtest import TestApp
 
-from pyramid_googleauth._routes import add_routes
+from dev.app import app as demo_app
 from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
@@ -41,27 +37,26 @@ def logged_in(
 
 
 @pytest.fixture
-def pyramid_app(pyramid_settings, policy):
-
-    config = pyramid.config.Configurator(settings=pyramid_settings)
-    config.include("pyramid_googleauth")
-    add_routes(config)
-
-    session_factory = SignedCookieSessionFactory(
-        pyramid_settings["pyramid_googleauth.secret"],
-        serializer=pyramid.session.JSONSerializer(),
+def environment(monkeypatch, pyramid_settings):
+    monkeypatch.setenv(
+        "PYRAMID_GOOGLEAUTH_CLIENT_ID",
+        pyramid_settings["pyramid_googleauth.google_client_id"],
     )
-    config.set_session_factory(session_factory)
-    config.set_security_policy(policy)
+    monkeypatch.setenv(
+        "PYRAMID_GOOGLEAUTH_CLIENT_SECRET",
+        pyramid_settings["pyramid_googleauth.google_client_secret"],
+    )
+    monkeypatch.setenv(
+        "PYRAMID_GOOGLEAUTH_SECRET", pyramid_settings["pyramid_googleauth.secret"]
+    )
+    monkeypatch.setenv(
+        "GOOGLEAUTH_SUCCESS_REDIRECT_URL",
+        pyramid_settings["pyramid_googleauth.login_success_redirect_url"],
+    )
 
-    def protected_view(_context, _request):
-        return Response(body="ok", status=200)
+    monkeypatch.setenv("SESSION_SECRET", pyramid_settings["pyramid_googleauth.secret"])
 
-    def logged_out(request):
-        return HTTPFound(location=request.route_url("pyramid_googleauth.login"))
 
-    config.add_view(protected_view, route_name="protected_view", permission="admin")
-    config.add_route("protected_view", "/inside")
-    config.add_forbidden_view(logged_out)
-
-    return config.make_wsgi_app()
+@pytest.fixture
+def pyramid_app(environment):  # pylint: disable=unused-argument
+    return demo_app()
