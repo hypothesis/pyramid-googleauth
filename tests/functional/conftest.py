@@ -1,11 +1,8 @@
-import pytest
-from webtest import TestApp
+from unittest.mock import sentinel
 
+import pytest
 from examples.app import app as demo_app
-from tests.functional.mock_services import (  # pylint:disable=unused-import
-    mock_google_auth_service,
-)
-from tests.functional.services import signature_service  # pylint:disable=unused-import
+from webtest import TestApp
 
 
 @pytest.fixture
@@ -21,7 +18,7 @@ def app(pyramid_app):
 
 @pytest.fixture
 def logged_in(
-    app, route_url, signature_service, mock_google_auth_service
+    app, route_url, mock_google_auth_service
 ):  # pylint: disable=unused-argument
     """Make `app` be logged in to the admin pages with a session cookie."""
     # Google redirects the browser to our login callback URL with a state
@@ -32,7 +29,9 @@ def logged_in(
     # requests made with `app`.
     app.get(
         route_url("pyramid_googleauth.login.callback"),
-        params={"state": signature_service.get_nonce()},
+        params={  # pylint: disable=protected-access
+            "state": mock_google_auth_service._get_nonce()
+        },
     )
 
 
@@ -60,3 +59,16 @@ def environment(monkeypatch, pyramid_settings):
 @pytest.fixture
 def pyramid_app(environment):  # pylint: disable=unused-argument
     return demo_app()
+
+
+@pytest.fixture
+def mock_google_auth_service(patch):
+    MockGoogleAuthService = patch(
+        "pyramid_googleauth.services.google_auth.GoogleAuthService"
+    )
+    mock_google_auth_service = MockGoogleAuthService.return_value
+    mock_google_auth_service.exchange_auth_code.return_value = (
+        {"email": "user@hypothes.is"},
+        sentinel.credentials,
+    )
+    return mock_google_auth_service

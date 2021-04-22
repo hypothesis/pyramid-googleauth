@@ -24,7 +24,7 @@ class TestGoogleAuthService:
         os.environ = {}
         client_config["redirect_uri"] = redirect_uri
 
-        GoogleAuthService(sentinel.signature_service, client_config=client_config)
+        GoogleAuthService(sentinel.secret, client_config=client_config)
 
         assert bool(os.environ.get("OAUTHLIB_INSECURE_TRANSPORT")) == insecure
 
@@ -54,21 +54,21 @@ class TestGoogleAuthService:
             # We aren't interested in login_url, but it triggers the call
             service.login_url()
 
-    def test_login_url_base_case(self, service, flow):
+    def test_login_url_base_case(self, _get_nonce, _check_nonce, service, flow):
         url = service.login_url()
 
         flow.authorization_url.assert_called_once_with(
             access_type="offline",
             include_granted_scopes="true",
             login_hint=Any(),
-            state=service._signature_service.get_nonce.return_value,
+            state=_get_nonce.return_value,
             prompt=Any(),
         )
 
         authorization_url, state = flow.authorization_url.return_value
 
         assert url == authorization_url
-        service._signature_service.check_nonce.assert_called_once_with(state)
+        _check_nonce.assert_called_once_with(state)
 
     @pytest.mark.parametrize("login_hint", (None, "staff@hypothes.is"))
     @pytest.mark.parametrize("force_login", (True, False))
@@ -84,13 +84,13 @@ class TestGoogleAuthService:
         )
 
     @pytest.mark.usefixtures("flow")
-    def test_login_url_verifies_the_state(self, service):
-        service._signature_service.check_nonce.return_value = False
+    def test_login_url_verifies_the_state(self, service, _check_nonce):
+        _check_nonce.return_value = False
 
         with pytest.raises(UserNotAuthenticated):
             service.login_url()
 
-    def test_exchange_auth_code_works(self, service, flow, jwt):
+    def test_exchange_auth_code_works(self, service, flow, jwt, _check_nonce):
         redirect_url = "http://example.com?state=state_value"
 
         user_details, credentials = service.exchange_auth_code(redirect_url)
@@ -101,7 +101,7 @@ class TestGoogleAuthService:
         )
 
         # We extract and check the state/nonce
-        service._signature_service.check_nonce.assert_called_once_with("state_value")
+        _check_nonce.assert_called_once_with("state_value")
 
         assert user_details == jwt.decode.return_value
         assert credentials == {
@@ -118,8 +118,8 @@ class TestGoogleAuthService:
         with pytest.raises(UserNotAuthenticated):
             service.exchange_auth_code("http://example.com?error=oh_dear")
 
-    def test_exchange_auth_code_checks_the_state(self, service):
-        service._signature_service.check_nonce.return_value = False
+    def test_exchange_auth_code_checks_the_state(self, service, _check_nonce):
+        _check_nonce.return_value = False
         with pytest.raises(UserNotAuthenticated):
             service.exchange_auth_code("http://example.com?state=BAD_STATE")
 
@@ -135,11 +135,17 @@ class TestGoogleAuthService:
         with pytest.raises(BadOAuth2Config):
             service.exchange_auth_code("http://example.com?state=state_value")
 
-    def test_exchange_auth_code_raises_with_a_bad_jwt(self, service, jwt):
-        jwt.decode.side_effect = InvalidTokenError
+    def test_exchange_auth_code_raises_with_a_bad_jwt(self, service, jwt, _check_nonce):
+        _check_nonce.return_value = True
+        jwt.decode.side_effect = InvalidTokenError()
 
         with pytest.raises(UserNotAuthenticated):
             service.exchange_auth_code("http://example.com?state=state_value")
+
+    def test_check_nonce(self, service, jwt):
+        jwt.decode.side_effect = InvalidTokenError()
+
+        assert service._check_nonce("something-wrong") == False
 
     @pytest.fixture
     def client_config(self):
@@ -150,8 +156,8 @@ class TestGoogleAuthService:
         }
 
     @pytest.fixture
-    def service(self, signature_service, client_config):
-        return GoogleAuthService(signature_service, client_config)
+    def service(self, client_config):
+        return GoogleAuthService("secret", client_config)
 
     @pytest.fixture
     def flow(self, Flow):
@@ -171,6 +177,14 @@ class TestGoogleAuthService:
     @pytest.fixture(autouse=True)
     def Flow(self, patch):
         return patch("pyramid_googleauth.services.google_auth.Flow")
+
+    @pytest.fixture
+    def _get_nonce(self, patch_object):
+        return patch_object(GoogleAuthService, "_get_nonce")
+
+    @pytest.fixture
+    def _check_nonce(self, patch_object):
+        return patch_object(GoogleAuthService, "_check_nonce")
 
 
 class TestFactory:

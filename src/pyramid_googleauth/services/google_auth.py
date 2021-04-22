@@ -1,4 +1,6 @@
 import os
+import random
+from datetime import datetime, timedelta
 from urllib.parse import parse_qsl, urlparse
 
 import jwt
@@ -7,13 +9,19 @@ from jwt import InvalidTokenError
 from oauthlib.oauth2.rfc6749.errors import InvalidClientError, InvalidGrantError
 
 from pyramid_googleauth.exceptions import BadOAuth2Config, UserNotAuthenticated
-from pyramid_googleauth.services.signature import SignatureService
 
 
 class GoogleAuthService:
     # https://developers.google.com/identity/protocols/oauth2/web-server
 
     # From: https://accounts.google.com/.well-known/openid-configuration
+
+    NONCE_EXPIRATION = timedelta(minutes=60)
+
+    HEX_DIGITS = "012345678abcdef"
+
+    SALT_LENGTH = 32
+
     OPEN_ID_DISCOVERY = {
         "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
         "token_endpoint": "https://oauth2.googleapis.com/token",
@@ -28,10 +36,10 @@ class GoogleAuthService:
         "openid",
     ]
 
-    def __init__(self, signature_service, client_config):
+    def __init__(self, secret, client_config):
         """Create a new authentication service object.
 
-        :param signature_service: Instance of SignatureService
+        :param secret: Secret used for nonce generation
         :param client_config: Dict of Google OAuth2 configuration data
 
         Expected keys of `client_config`:
@@ -41,7 +49,7 @@ class GoogleAuthService:
             * `redirect_uri` - Redirect URI registered with Google
         """
 
-        self._signature_service = signature_service
+        self._secret = secret
 
         self._client_id = client_config["client_id"]
         self._client_secret = client_config["client_secret"]
@@ -51,6 +59,32 @@ class GoogleAuthService:
             # Allow HTTP in dev, otherwise we'll get errors when trying to
             # authenticate with some of the OAuth libraries
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+    def _get_nonce(self):
+        """Create a random verifiable nonce value."""
+
+        salt = "".join(random.choices(self.HEX_DIGITS, k=self.SALT_LENGTH))
+
+        signature = jwt.encode(
+            {"exp": datetime.utcnow() + self.NONCE_EXPIRATION, "salt": salt},
+            self._secret,
+            algorithm="HS256",
+        )
+
+        return signature
+
+    def _check_nonce(self, nonce):
+        """Check a nonce was created with `_get_nonce`.
+
+        :param nonce: String to check
+        :return: Boolean indicating if this is a valid nonce
+        """
+        try:
+            jwt.decode(nonce, self._secret, algorithms=["HS256"])
+        except InvalidTokenError:
+            return False
+        else:
+            return True
 
     def login_url(self, login_hint=None, force_login=False):
         """Generate URL for request to Google's OAuth 2.0 server.
@@ -72,7 +106,7 @@ class GoogleAuthService:
             # If we happen to know who is logging in, we can pre-fill the form
             login_hint=login_hint,
             # Enable a nonce value we can verify to prevent XSS attacks
-            state=self._signature_service.get_nonce(),
+            state=self._get_nonce(),
             # Should we make the user fill out the form again?
             prompt="select_account" if force_login else None,
         )
@@ -92,7 +126,6 @@ class GoogleAuthService:
         :raise BadOAuth2Config: If our OAuth2 config is incorrect
         :return: A tuple of dicts (user_info, credentials)
         """
-
         self._assert_redirect_url_valid(redirect_url)
 
         flow = self._get_flow()
@@ -132,7 +165,7 @@ class GoogleAuthService:
         self._assert_state_valid(query.get("state"))
 
     def _assert_state_valid(self, state):
-        if not self._signature_service.check_nonce(state):
+        if not self._check_nonce(state):
             raise UserNotAuthenticated("State check failed")
 
     @classmethod
@@ -180,9 +213,7 @@ class GoogleAuthService:
 
 def factory(_context, request):
     return GoogleAuthService(
-        signature_service=SignatureService(
-            secret=request.registry.settings["pyramid_googleauth.secret"]
-        ),
+        secret=request.registry.settings["pyramid_googleauth.secret"],
         client_config={
             # The client id and secret are provided by Google and are different
             # from env to env. So we read these from environment variables in

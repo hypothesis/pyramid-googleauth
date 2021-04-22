@@ -88,8 +88,8 @@ class TestLoginCallback:
         )
 
     @pytest.fixture
-    def nonce(self, signature_service):
-        return signature_service.get_nonce()
+    def nonce(self, mock_google_auth_service):
+        return mock_google_auth_service._get_nonce()  # pylint: disable=protected-access
 
 
 class TestLogout:
