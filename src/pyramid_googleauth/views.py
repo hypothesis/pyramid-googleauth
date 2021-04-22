@@ -1,6 +1,3 @@
-"""User feedback for blocked pages."""
-
-
 from logging import getLogger
 
 from pyramid.httpexceptions import HTTPFound
