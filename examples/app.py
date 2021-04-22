@@ -8,7 +8,7 @@ from pyramid.security import Allowed, Denied
 from pyramid.session import SignedCookieSessionFactory
 from pyramid.view import view_config
 
-from pyramid_googleauth.security import GoogleSecurityPolicy
+from pyramid_googleauth import GoogleSecurityPolicy
 
 
 # Your app needs to have a Pyramid security policy that subclasses
