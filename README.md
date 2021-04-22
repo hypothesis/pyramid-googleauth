@@ -65,7 +65,7 @@ To use pyramid-googleauth with your Pyramid app:
 
    Your app needs to set a session factory, a security policy, and a handful of
    pyramid-googleauth settings, before doing `config.include("pyramid-googleauth")`.
-   See [the test app](dev/app.py) for a working example to copy from.
+   See [the test app](src/example/app.py) for a working example to copy from.
 
 Hacking
 -------
