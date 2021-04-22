@@ -1,7 +1,7 @@
 import pytest
 from webtest import TestApp
 
-from dev.app import app as demo_app
+from examples.app import app as demo_app
 from tests.functional.mock_services import (  # pylint:disable=unused-import
     mock_google_auth_service,
 )
