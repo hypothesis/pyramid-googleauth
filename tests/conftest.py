@@ -30,7 +30,7 @@ def pyramid_settings():
         "pyramid_googleauth.secret": "not-very-secret",
         "pyramid_googleauth.google_client_id": "google_client_id",
         "pyramid_googleauth.google_client_secret": "google_client_secret",
-        "pyramid_googleauth.login_success_redirect_url": "http://example.com/inside",
+        "pyramid_googleauth.login_success_redirect_url": "/protected",
     }
 
 
