@@ -31,12 +31,10 @@ class TestLogin:
 
 class TestLoginCallback:
     @pytest.mark.usefixtures("mock_google_auth_service")
-    def test_it_redirects_to_success_redirect(self, app, nonce, pyramid_settings):
+    def test_it_redirects_to_success_redirect(self, app, nonce):
         response = app.get("/googleauth/login/callback", params={"state": nonce})
 
-        assert response == temporary_redirect_to(
-            pyramid_settings["pyramid_googleauth.login_success_redirect_url"]
-        )
+        assert response == temporary_redirect_to("https://localhost/protected")
         # Webtest handles cookies so if we follow the redirect to the admin
         # page we should be authenticated and get a 200 OK not a redirect to
         # the login page.
@@ -103,7 +101,7 @@ class TestLogout:
         assert response == temporary_redirect_to(route_url("pyramid_googleauth.login"))
 
     @pytest.mark.usefixtures("logged_in")
-    def test_if_youre_logged_in_it_logs_you_out_and_redirects_you_to_the_login_page(
+    def test_if_youre_logged_in_it_logs_you_out_cant_access_protected(
         self, app, route_url
     ):
         response = app.get("/googleauth/logout")
@@ -111,6 +109,4 @@ class TestLogout:
         assert response == temporary_redirect_to(
             route_url("pyramid_googleauth.login", _query={"hint": "user@hypothes.is"})
         )
-        # Verify that it has logged us out by trying to get the admin page and
-        # verifying that it redirects rather than 200ing.
-        app.get("/inside", status=302)
+        app.get("/protected", status=403)
