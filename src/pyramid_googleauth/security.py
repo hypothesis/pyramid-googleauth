@@ -4,22 +4,22 @@ from pyramid.authentication import SessionAuthenticationHelper
 
 
 class GoogleSecurityPolicy:
-    @staticmethod
+    @property
     @lru_cache(maxsize=None)
-    def session():
+    def session(self):
         return SessionAuthenticationHelper(prefix="googleauth.")
 
     def identity(self, request):  # pragma: no cover
         raise NotImplementedError()
 
     def authenticated_userid(self, request):
-        return self.session().authenticated_userid(request)
+        return self.session.authenticated_userid(request)
 
     def permits(self, request, context, permission):  # pragma: no cover
         raise NotImplementedError()
 
     def remember(self, request, userid, **kwargs):
-        return self.session().remember(request, userid, **kwargs)
+        return self.session.remember(request, userid, **kwargs)
 
     def forget(self, request, **kwargs):
-        return self.session().forget(request, **kwargs)
+        return self.session.forget(request, **kwargs)

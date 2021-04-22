@@ -6,7 +6,7 @@ from pyramid.security import Allowed, Denied
 
 class TestGoogleSecurityPolicy:
     def test_session(self, policy):
-        assert policy.session().userid_key == "googleauth.userid"
+        assert policy.session.userid_key == "googleauth.userid"
 
     @pytest.mark.parametrize(
         "userid,expected_identity",

@@ -1,8 +1,9 @@
 from unittest.mock import sentinel
 
 import pytest
-from examples.app import app as demo_app
 from webtest import TestApp
+
+from examples.app import app as demo_app
 
 
 @pytest.fixture
