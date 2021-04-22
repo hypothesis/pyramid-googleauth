@@ -4,6 +4,11 @@ parallel = True
 source =
     pyramid_googleauth
     tests/unit
+    examples
+omit =
+    # Can't be bothered to write unit tests for the example app right now.
+    # It is covered by the functests.
+    examples/app.py
 
 [paths]
 source =
