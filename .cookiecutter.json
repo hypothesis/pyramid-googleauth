@@ -7,7 +7,8 @@
         "disable_replay": [
             "README.md",
             "setup.cfg",
-            "src/pyramid_googleauth/__init__.py"
+            "src/pyramid_googleauth/__init__.py",
+            "tests/conftest.py"
         ]
     },
     "_template": "gh:hypothesis/h-cookiecutter-pypackage"
