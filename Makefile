@@ -15,10 +15,6 @@ help:
 	@echo "make testall           Run the unit tests against all versions of Python"
 	@echo "make sure              Make sure that the formatter, linter, tests, etc all pass"
 	@echo "make coverage          Print the unit test coverage report"
-	@echo "make clean             Delete development artefacts (cached files, "
-	@echo "                       dependencies, etc)"
-	@echo "make template          Replay the cookiecutter project template over this"
-	@echo "                       project. Warning! This can destroy changes."
 
 .PHONY: dev
 dev: python
@@ -71,16 +67,7 @@ sure: checkformatting lint test coverage functests
 coverage: python
 	@tox -qe coverage
 
-.PHONY: template
-template: python
-	@tox -qe replay-cookiecutter
-
-.PHONY: clean
-clean:
-	@find . -type f -name "*.py[co]" -delete
-	@find . -type d -name "__pycache__" -delete
-	@rm -rf build .eggs dist *.egg-info src/*.egg-info .coverage.* .coverage .pytest_cache
-
 .PHONY: python
 python:
-	@./bin/install-python.sh
+	@# Ensure we can run even if the local pyenv versions are not installed
+	@PYENV_VERSION=system hdev install-python;
