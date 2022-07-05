@@ -109,7 +109,7 @@ class TestAdminLoginFailure:
     def test_it_returns_unauthorized(self, pyramid_request):
         response = login_failure(pyramid_request)
 
-        assert response == {}
+        assert not response
         assert pyramid_request.response.status_code == 401
 
 
