@@ -5,7 +5,7 @@ from pyramid.authentication import SessionAuthenticationHelper
 
 class GoogleSecurityPolicy:
     @property
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=1)
     def session(self):
         return SessionAuthenticationHelper(prefix="googleauth.")
 
