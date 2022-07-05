@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 import random
 from datetime import datetime, timedelta
@@ -60,6 +62,15 @@ class GoogleAuthService:
             # authenticate with some of the OAuth libraries
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
+    def _encode_state(self, payload: dict):
+        return base64.urlsafe_b64encode(json.dumps(payload).encode("utf8"))
+
+    def _decode_state(self, state: str):
+        try:
+            return json.loads(base64.urlsafe_b64decode(state))
+        except ValueError:
+            return {}
+
     def _get_nonce(self):
         """Create a random verifiable nonce value."""
 
@@ -86,12 +97,13 @@ class GoogleAuthService:
         else:
             return True
 
-    def login_url(self, login_hint=None, force_login=False):
+    def login_url(self, login_hint=None, force_login=False, next_=None):
         """Generate URL for request to Google's OAuth 2.0 server.
 
         :param login_hint: Pre-fill the form with this email address
         :param force_login: Force a user to login again, even if Google has a
             cookie for them.
+        :param next_: URL to redirect the user after a successful login.
         :raise BadOAuth2Config: If our OAuth2 config is incorrect
         :return: A URL to redirect the user to for login
         """
@@ -105,8 +117,15 @@ class GoogleAuthService:
             include_granted_scopes="true",
             # If we happen to know who is logging in, we can pre-fill the form
             login_hint=login_hint,
-            # Enable a nonce value we can verify to prevent XSS attacks
-            state=self._get_nonce(),
+            # String value that your application uses to maintain state between
+            # your authorization request and the authorization server's response
+            state=self._encode_state(
+                {
+                    "next": next_,
+                    # Enable a nonce value we can verify to prevent XSS attacks
+                    "nonce": self._get_nonce(),
+                }
+            ),
             # Should we make the user fill out the form again?
             prompt="select_account" if force_login else None,
         )
@@ -124,9 +143,12 @@ class GoogleAuthService:
         :param redirect_url: The URL that we received the callback on
         :raise UserNotAuthenticated: If the user fails authentication
         :raise BadOAuth2Config: If our OAuth2 config is incorrect
-        :return: A tuple of dicts (user_info, credentials)
+        :return: A tuple of dicts (user_info, credentials, state)
         """
-        self._assert_redirect_url_valid(redirect_url)
+        query = dict(parse_qsl(urlparse(redirect_url)[4]))
+
+        self._assert_no_errors(query.get("error"))
+        self._assert_state_valid(query.get("state"))
 
         flow = self._get_flow()
         try:
@@ -153,19 +175,16 @@ class GoogleAuthService:
                 "client_secret": credentials.client_secret,
                 "scopes": credentials.scopes,
             },
+            self._decode_state(query["state"]),
         )
 
-    def _assert_redirect_url_valid(self, redirect_url):
-        query = dict(parse_qsl(urlparse(redirect_url)[4]))
-
-        error = query.get("error")
+    def _assert_no_errors(self, error):
         if error:
             raise UserNotAuthenticated(f"Error returned from authentication: {error}")
 
-        self._assert_state_valid(query.get("state"))
-
     def _assert_state_valid(self, state):
-        if not self._check_nonce(state):
+        state = self._decode_state(state)
+        if not self._check_nonce(state.get("nonce")):
             raise UserNotAuthenticated("State check failed")
 
     @classmethod

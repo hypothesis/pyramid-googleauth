@@ -15,7 +15,7 @@ class TestLogin:
         response = login(sentinel.context, pyramid_request)
 
         google_auth_service_factory.return_value.login_url.assert_called_once_with(
-            force_login=True, login_hint=None
+            force_login=True, login_hint=None, next_=None
         )
         assert (
             response.location
@@ -30,7 +30,7 @@ class TestLogin:
         login(sentinel.context, pyramid_request)
 
         google_auth_service_factory.return_value.login_url.assert_called_once_with(
-            force_login=False, login_hint="staff@hypothes.is"
+            force_login=False, login_hint="staff@hypothes.is", next_=None
         )
 
     def test_it_suggests_a_user_from_hint_parameter(
@@ -41,7 +41,18 @@ class TestLogin:
         login(sentinel.context, pyramid_request)
 
         google_auth_service_factory.return_value.login_url.assert_called_once_with(
-            force_login=True, login_hint="staff@hypothes.is"
+            force_login=True, login_hint="staff@hypothes.is", next_=None
+        )
+
+    def test_it_propagates_the_next_parameter(
+        self, pyramid_request, google_auth_service_factory
+    ):
+        pyramid_request.GET["next"] = sentinel.next
+
+        login(sentinel.context, pyramid_request)
+
+        google_auth_service_factory.return_value.login_url.assert_called_once_with(
+            force_login=True, login_hint=None, next_=sentinel.next
         )
 
 
@@ -59,6 +70,7 @@ class TestLoginCallback:
         google_auth_service_factory.return_value.exchange_auth_code.return_value = (
             user,
             sentinel.credentials,
+            {},
         )
 
         response = login_callback(sentinel.context, pyramid_request)
@@ -66,6 +78,24 @@ class TestLoginCallback:
         assert pyramid_request.session == {"user": user}
         assert response.location == "/protected"
         assert "Remember-Header" in list(response.headers)
+
+    def test_it_redirects_to_next(
+        self, pyramid_config, pyramid_request, google_auth_service_factory
+    ):
+        pyramid_config.testing_securitypolicy(
+            remember_result=[("Remember-Header", "remember_value")]
+        )
+        pyramid_request.session["some_noise"] = "which_should_be_cleared_out"
+
+        google_auth_service_factory.return_value.exchange_auth_code.return_value = (
+            {"email": "staff@hypothes.is", "user_other": "user_value"},
+            sentinel.credentials,
+            {"next": "/next"},
+        )
+
+        response = login_callback(sentinel.context, pyramid_request)
+
+        assert response.location == "/next"
 
     def test_it_bails_out_if_the_user_is_not_authenticated(
         self, pyramid_request, google_auth_service_factory
