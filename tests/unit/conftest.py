@@ -4,7 +4,7 @@ from pyramid.request import apply_request_extensions
 from pyramid.testing import DummyRequest
 
 from pyramid_googleauth._routes import add_routes
-from tests.unit.services import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from tests.unit.pyramid_googleauth.services import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 
 @pytest.fixture
