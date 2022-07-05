@@ -27,6 +27,7 @@ def login(context, request):
         force_login=not bool(authenticated_email),
         # Try to prefill the form with the users email
         login_hint=authenticated_email or request.GET.get("hint"),
+        next_=request.GET.get("next"),
     )
 
     return HTTPFound(location=location)
@@ -40,7 +41,7 @@ def login_callback(context, request):
 
     google_auth = google_auth_service_factory(context, request)
     try:
-        user, _credentials = google_auth.exchange_auth_code(request.url)
+        user, _credentials, state = google_auth.exchange_auth_code(request.url)
 
     except UserNotAuthenticated as err:
         # Looks like the user isn't supposed to be here, but we need to give
@@ -52,9 +53,8 @@ def login_callback(context, request):
     request.session.update({"user": user})
 
     return HTTPFound(
-        location=request.registry.settings[
-            "pyramid_googleauth.login_success_redirect_url"
-        ],
+        location=state.get("next")
+        or request.registry.settings["pyramid_googleauth.login_success_redirect_url"],
         # This causes the users email to be stored as the authenticated user
         headers=remember(request, user["email"], iface=GoogleSecurityPolicy),
     )

@@ -28,6 +28,7 @@ class TestGoogleAuthService:
 
         assert bool(os.environ.get("OAUTHLIB_INSECURE_TRANSPORT")) == insecure
 
+    @pytest.mark.usefixtures("_get_nonce", "_decode_state", "base64")
     def test_getting_a_flow(self, service, client_config, flow, Flow):
         # We aren't interested in login_url, but it triggers the call
         service.login_url()
@@ -54,24 +55,28 @@ class TestGoogleAuthService:
             # We aren't interested in login_url, but it triggers the call
             service.login_url()
 
-    def test_login_url_base_case(self, _get_nonce, _check_nonce, service, flow):
-        url = service.login_url()
+    def test_login_url_base_case(self, _check_nonce, service, flow, base64, json, jwt):
+        url = service.login_url(next_="/next")
 
         flow.authorization_url.assert_called_once_with(
             access_type="offline",
             include_granted_scopes="true",
             login_hint=Any(),
-            state=_get_nonce.return_value,
+            state=base64.urlsafe_b64encode.return_value,
             prompt=Any(),
         )
 
-        authorization_url, state = flow.authorization_url.return_value
+        json.dumps.assert_called_once_with(
+            {"next": "/next", "nonce": jwt.encode.return_value}
+        )
+        authorization_url, _ = flow.authorization_url.return_value
 
         assert url == authorization_url
-        _check_nonce.assert_called_once_with(state)
+        _check_nonce.assert_called_once_with(json.loads.return_value.get.return_value)
 
     @pytest.mark.parametrize("login_hint", (None, "staff@hypothes.is"))
     @pytest.mark.parametrize("force_login", (True, False))
+    @pytest.mark.usefixtures("base64")
     def test_login_url_variations(self, service, flow, login_hint, force_login):
         service.login_url(login_hint, force_login)
 
@@ -83,17 +88,18 @@ class TestGoogleAuthService:
             prompt="select_account" if force_login else None,
         )
 
-    @pytest.mark.usefixtures("flow")
+    @pytest.mark.usefixtures("flow", "base64")
     def test_login_url_verifies_the_state(self, service, _check_nonce):
         _check_nonce.return_value = False
 
         with pytest.raises(UserNotAuthenticated):
             service.login_url()
 
-    def test_exchange_auth_code_works(self, service, flow, jwt, _check_nonce):
+    @pytest.mark.usefixtures("base64")
+    def test_exchange_auth_code_works(self, service, flow, jwt, _check_nonce, json):
         redirect_url = "http://example.com?state=state_value"
 
-        user_details, credentials = service.exchange_auth_code(redirect_url)
+        user_details, credentials, state = service.exchange_auth_code(redirect_url)
 
         flow.fetch_token.assert_called_once_with(authorization_response=redirect_url)
         jwt.decode.assert_called_once_with(
@@ -101,7 +107,7 @@ class TestGoogleAuthService:
         )
 
         # We extract and check the state/nonce
-        _check_nonce.assert_called_once_with("state_value")
+        _check_nonce.assert_called_once_with(json.loads.return_value.get.return_value)
 
         assert user_details == jwt.decode.return_value
         assert credentials == {
@@ -175,16 +181,30 @@ class TestGoogleAuthService:
         return patch("pyramid_googleauth.services.google_auth.jwt")
 
     @pytest.fixture(autouse=True)
+    def json(self, patch):
+        return patch("pyramid_googleauth.services.google_auth.json")
+
+    @pytest.fixture
+    def base64(self, patch):
+        return patch("pyramid_googleauth.services.google_auth.base64")
+
+    @pytest.fixture(autouse=True)
     def Flow(self, patch):
         return patch("pyramid_googleauth.services.google_auth.Flow")
 
     @pytest.fixture
     def _get_nonce(self, patch_object):
-        return patch_object(GoogleAuthService, "_get_nonce")
+        patch = patch_object(GoogleAuthService, "_get_nonce")
+        patch.return_value = "SOME-JWT"
+        return patch
 
     @pytest.fixture
     def _check_nonce(self, patch_object):
         return patch_object(GoogleAuthService, "_check_nonce")
+
+    @pytest.fixture
+    def _decode_state(self, patch_object):
+        return patch_object(GoogleAuthService, "_decode_state")
 
 
 class TestFactory:
