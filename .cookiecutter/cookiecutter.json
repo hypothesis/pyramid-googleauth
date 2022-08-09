@@ -1,0 +1,23 @@
+{
+  "template": "https://github.com/hypothesis/cookiecutters",
+  "checkout": null,
+  "directory": "pypackage",
+  "ignore": ["src/pyramid_googleauth/core.py", "tests/unit/pyramid_googleauth/core_test.py", "tests/functional/sanity_test.py"],
+  "extra_context": {
+    "name": "pyramid-googleauth",
+    "package_name": "pyramid_googleauth",
+    "slug": "pyramid-googleauth",
+    "short_description": "'Sign in with Google' for Pyramid.",
+    "python_versions": "3.9.4, 3.8.9",
+    "github_owner": "hypothesis",
+    "copyright_holder": "Hypothesis",
+    "visibility": "public",
+    "console_script": "no",
+    "devdata": "yes",
+    "services": "no",
+    "dependabot_pip_interval": "monthly",
+    "__entry_point": "pyramid-googleauth",
+    "__github_url": "https://github.com/hypothesis/pyramid-googleauth",
+    "__pypi_url": "https://pypi.org/project/pyramid-googleauth"
+  }
+}

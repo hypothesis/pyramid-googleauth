@@ -151,7 +151,7 @@ class TestGoogleAuthService:
     def test_check_nonce(self, service, jwt):
         jwt.decode.side_effect = InvalidTokenError()
 
-        assert service._check_nonce("something-wrong") == False
+        assert service._check_nonce("something-wrong") is False
 
     @pytest.fixture
     def client_config(self):

@@ -1,3 +1,0 @@
-# Make sure source distributions have the license
-include LICENSE
-include src/pyramid_googleauth/templates/*
