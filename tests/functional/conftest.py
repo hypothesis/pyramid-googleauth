@@ -18,9 +18,7 @@ def app(pyramid_app):
 
 
 @pytest.fixture
-def logged_in(
-    app, route_url, mock_google_auth_service
-):  # pylint: disable=unused-argument
+def logged_in(app, route_url, mock_google_auth_service):
     """Make `app` be logged in to the admin pages with a session cookie."""
     # Google redirects the browser to our login callback URL with a state
     # param, and the login callback URL's response includes a session cookie in

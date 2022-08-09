@@ -1,0 +1,3 @@
+google-auth-oauthlib
+PyJWT
+pyramid>=2.0.0
