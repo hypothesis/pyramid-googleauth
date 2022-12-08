@@ -1,4 +1,3 @@
-
 ## Usage
 
 To use pyramid-googleauth with your Pyramid app:
