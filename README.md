@@ -92,7 +92,8 @@ Then to set up your development environment:
 
 ```terminal
 git clone https://github.com/hypothesis/pyramid-googleauth.git
-cd pyramid_googleauth
+cd pyramid-googleauth
+make devdata
 make help
 ```
 
