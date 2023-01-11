@@ -23,6 +23,7 @@
     "__entry_point": "pyramid-googleauth",
     "__github_url": "https://github.com/hypothesis/pyramid-googleauth",
     "__pypi_url": "https://pypi.org/project/pyramid-googleauth",
-    "__copyright_year": "2022"
+    "__copyright_year": "2022",
+    "pypi": "yes"
   }
 }
