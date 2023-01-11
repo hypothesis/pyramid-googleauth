@@ -2,7 +2,11 @@
   "template": "https://github.com/hypothesis/cookiecutters",
   "checkout": null,
   "directory": "pypackage",
-  "ignore": ["src/pyramid_googleauth/core.py", "tests/unit/pyramid_googleauth/core_test.py", "tests/functional/sanity_test.py"],
+  "ignore": [
+    "src/pyramid_googleauth/core.py",
+    "tests/unit/pyramid_googleauth/core_test.py",
+    "tests/functional/sanity_test.py"
+  ],
   "extra_context": {
     "name": "pyramid-googleauth",
     "package_name": "pyramid_googleauth",
@@ -18,6 +22,7 @@
     "dependabot_pip_interval": "monthly",
     "__entry_point": "pyramid-googleauth",
     "__github_url": "https://github.com/hypothesis/pyramid-googleauth",
-    "__pypi_url": "https://pypi.org/project/pyramid-googleauth"
+    "__pypi_url": "https://pypi.org/project/pyramid-googleauth",
+    "__copyright_year": "2022"
   }
 }
