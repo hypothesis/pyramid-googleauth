@@ -15,16 +15,16 @@ class TestLogin:
 
         assert response == temporary_redirect_to(
             Any.url.matching("https://accounts.google.com/o/oauth2/v2/auth").with_query(
-                dict(
-                    response_type="code",
-                    client_id="google_client_id",
-                    redirect_uri=route_url("pyramid_googleauth.login.callback"),
-                    scope=Any.string(),
-                    state=Any.string(),
-                    access_type="offline",
-                    include_granted_scopes="true",
-                    prompt="select_account",
-                )
+                {
+                    "response_type": "code",
+                    "client_id": "google_client_id",
+                    "redirect_uri": route_url("pyramid_googleauth.login.callback"),
+                    "scope": Any.string(),
+                    "state": Any.string(),
+                    "access_type": "offline",
+                    "include_granted_scopes": "true",
+                    "prompt": "select_account",
+                }
             )
         )
 
