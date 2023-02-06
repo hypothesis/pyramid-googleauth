@@ -94,8 +94,8 @@ class GoogleAuthService:
             jwt.decode(nonce, self._secret, algorithms=["HS256"])
         except InvalidTokenError:
             return False
-        else:
-            return True
+
+        return True
 
     def login_url(self, login_hint=None, force_login=False, next_=None):
         """Generate URL for request to Google's OAuth 2.0 server.
@@ -195,7 +195,7 @@ class GoogleAuthService:
         try:
             # Don't bother checking this came from Google, we know the request
             # came from Google by virtue of the state/nonce.
-            return jwt.decode(id_token, options=dict(verify_signature=False))
+            return jwt.decode(id_token, options={"verify_signature": False})
 
         except InvalidTokenError as err:
             # This could actually be because we have the wrong key... but we
