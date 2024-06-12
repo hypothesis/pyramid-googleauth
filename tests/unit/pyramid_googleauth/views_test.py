@@ -130,7 +130,7 @@ class TestLogout:
 
         response = logout(sentinel.context, pyramid_request)
 
-        assert response.location == Any.url.containing_query(
+        assert response.location == Any.url().containing_query(
             {"hint": "staff@hypothes.is"}
         )
 
