@@ -77,7 +77,7 @@ class TestLoginCallback:
         route_url,
         params,
         logged_text,
-    ):
+    ):  # pylint:disable=too-many-positional-arguments,
         caplog.set_level(logging.WARNING)
 
         response = app.get("/googleauth/login/callback", params)
