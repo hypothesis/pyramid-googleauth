@@ -9,7 +9,7 @@ $(call help,make help,print this help message)
 .PHONY: devdata
 $(call help,make devdata,load development data and environment variables)
 devdata: python
-	@tox -qe dev --run-command 'python bin/make_devdata'
+	@PYTHONPATH=$(CURDIR) TOX_TESTENV_PASSENV=PYTHONPATH tox -qe dev --run-command 'python bin/make_devdata'
 
 .PHONY: shell
 $(call help,make shell,"launch a Python shell in this project's virtualenv")
