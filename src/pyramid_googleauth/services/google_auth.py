@@ -219,7 +219,14 @@ class GoogleAuthService:
         }
 
         try:
-            flow = Flow.from_client_config({"web": client_args}, scopes=self.SCOPES)
+            flow = Flow.from_client_config(
+                {"web": client_args},
+                scopes=self.SCOPES,
+                # google-auth-oauthlib 1.3 enables PKCE by default, but we build
+                # a new flow per request, so the verifier wouldn't survive to
+                # the callback.
+                autogenerate_code_verifier=False,
+            )
         except ValueError as err:
             raise BadOAuth2Config("The authentication config is invalid") from err
 

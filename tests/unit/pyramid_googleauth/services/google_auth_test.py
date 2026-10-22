@@ -43,6 +43,7 @@ class TestGoogleAuthService:
                 }
             },
             scopes=service.SCOPES,
+            autogenerate_code_verifier=False,
         )
 
         assert flow.redirect_uri == client_config["redirect_uri"]
