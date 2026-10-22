@@ -42,7 +42,7 @@ def patch_object(request):
 @pytest.fixture
 def pyramid_settings():
     return {
-        "pyramid_googleauth.secret": "not-very-secret",
+        "pyramid_googleauth.secret": "not-very-secret-but-at-least-32-bytes-long",
         "pyramid_googleauth.google_client_id": "google_client_id",
         "pyramid_googleauth.google_client_secret": "google_client_secret",
         "pyramid_googleauth.login_success_redirect_url": "/protected",
